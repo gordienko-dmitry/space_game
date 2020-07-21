@@ -66,7 +66,7 @@ async def fly_garbage(canvas: Window, column: int, garbage_frame: str, speed: fl
     column = max(column, 1)
     column = min(column, columns_number - 1)
 
-    row: int = 1
+    row: float = 1.0
 
     height, width = get_frame_size(garbage_frame)
     obstacle: Obstacle = Obstacle(round(row), column, garbage_frame, height, width)
@@ -81,8 +81,8 @@ async def fly_garbage(canvas: Window, column: int, garbage_frame: str, speed: fl
             OBSTACLES.remove(obstacle)
             await explode(canvas, round(row + height / 2), round(column + width / 2))
             break
-        draw_frame(canvas, row, column, garbage_frame)
+        draw_frame(canvas, round(row), column, garbage_frame)
         await eventloop.sleep(1)
-        draw_frame(canvas, row, column, garbage_frame, negative=True)
+        draw_frame(canvas, round(row), column, garbage_frame, negative=True)
         row = round(row + speed)
-        obstacle.row = row
+        obstacle.row = round(row)
