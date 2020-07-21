@@ -84,5 +84,5 @@ async def fly_garbage(canvas: Window, column: int, garbage_frame: str, speed: fl
         draw_frame(canvas, round(row), column, garbage_frame)
         await eventloop.sleep(1)
         draw_frame(canvas, round(row), column, garbage_frame, negative=True)
-        row = round(row + speed)
+        row = row + speed
         obstacle.row = round(row)
