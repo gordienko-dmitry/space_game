@@ -12,24 +12,39 @@ from .obstacles import Obstacle
 from .explosion import explode
 
 
-GARBAGE_FRAMES: list = [frame for frame in read_frames_from_folder(GARBAGE_PATH)]
-OBSTACLES_IN_LAST_COLLISIONS: list = []
-OBSTACLES: list = []
+garbage_frames: list = [frame for frame in read_frames_from_folder(GARBAGE_PATH)]
+obstacles_in_last_collisions: list = []
+obstacles: list = []
 
 
 def clean_field(canvas: Window) -> None:
     """Destroy all garbage objects & clean their view. """
-    OBSTACLES_IN_LAST_COLLISIONS.clear()
-    for obstacle in OBSTACLES:
+    obstacles_in_last_collisions.clear()
+    for obstacle in obstacles:
         draw_frame(canvas, obstacle.row, obstacle.column, obstacle.frame, negative=True)
-    OBSTACLES.clear()
+    obstacles.clear()
+
+
+def _find_place_for_garbage(width: int, frame: str) -> int:
+    """Finding column without collision for new garbage object."""
+    frame_height: int
+    frame_width: int
+    column: int
+
+    for _ in range(10):
+        column = random.randint(1, width)
+        frame_height, frame_width = get_frame_size(frame)
+        for obstacle in obstacles:
+            if obstacle.has_collision(1, column, frame_height, frame_width):
+                break
+        else:
+            return column
+    return 0
 
 
 async def fill_orbit_with_garbage(canvas: Window) -> None:
     """Add garbage to window every tics count."""
     width: int
-    frame_height: int
-    frame_width: int
 
     _, width = getmaxyx_border(canvas)
     while True:
@@ -38,19 +53,10 @@ async def fill_orbit_with_garbage(canvas: Window) -> None:
             await eventloop.sleep(1)
             continue
         await eventloop.sleep(tics)
-        frame: str = random.choice(GARBAGE_FRAMES)
-        show: bool = True
-        column: int = 0
-        for _ in range(10):
-            column = random.randint(1, width)
-            frame_height, frame_width = get_frame_size(frame)
-            for obstacle in OBSTACLES:
-                if obstacle.has_collision(1, column, frame_height, frame_width):
-                    show = False
-                    break
-            if show:
-                break
-        if show:
+
+        frame: str = random.choice(garbage_frames)
+        column: int = _find_place_for_garbage(width, frame)
+        if column:
             eventloop.add_coroutine(fly_garbage(canvas, column, frame))
 
 
@@ -71,14 +77,14 @@ async def fly_garbage(canvas: Window, column: int, garbage_frame: str, speed: fl
     height, width = get_frame_size(garbage_frame)
     obstacle: Obstacle = Obstacle(round(row), column, garbage_frame, height, width)
 
-    OBSTACLES.append(obstacle)
+    obstacles.append(obstacle)
 
     while row < rows_number:
-        if obstacle not in OBSTACLES:
+        if obstacle not in obstacles:
             break
-        if obstacle in OBSTACLES_IN_LAST_COLLISIONS:
-            OBSTACLES_IN_LAST_COLLISIONS.remove(obstacle)
-            OBSTACLES.remove(obstacle)
+        if obstacle in obstacles_in_last_collisions:
+            obstacles_in_last_collisions.remove(obstacle)
+            obstacles.remove(obstacle)
             await explode(canvas, round(row + height / 2), round(column + width / 2))
             break
         draw_frame(canvas, round(row), column, garbage_frame)
@@ -86,3 +92,5 @@ async def fly_garbage(canvas: Window, column: int, garbage_frame: str, speed: fl
         draw_frame(canvas, round(row), column, garbage_frame, negative=True)
         row = row + speed
         obstacle.row = round(row)
+    else:
+        obstacles.remove(obstacle)

@@ -6,7 +6,7 @@ import time
 import eventloop
 
 from .curses_tools import draw_frame, get_frame_size, read_controls, getmaxyx_border, Window
-from .garbage import OBSTACLES, explode, clean_field
+from .garbage import obstacles, explode, clean_field
 from .game_scenario import show_game_over
 from .settings import MODELS_PATH
 from .physics import update_speed
@@ -59,28 +59,29 @@ class Ship:
         column = max(1, column)
         return row, column
 
-    async def collision(self) -> None:
+    async def check_collision(self) -> None:
         """Actions if ship has collision with garbage."""
-        collision: bool = False
-        for obstacle in OBSTACLES:
+        is_collision: bool = False
+        for obstacle in obstacles:
             if obstacle.has_collision(self.row, self.column, self.height, self.width):
-                collision = True
+                is_collision = True
                 break
-        if collision:
+        if is_collision:
             self.lives -= 1
-            if self.lives <= 0:
+            if not self.lives:
                 self.dead = True
                 await explode(self.canvas, int(self.row + self.height / 2), int(self.column + self.width / 2))
                 eventloop.add_coroutine(show_game_over(self.canvas))
-            else:
-                clean_field(self.canvas)
-                for _ in range(5):
-                    draw_frame(self.canvas, self.row, self.column, self.frame)
-                    self.canvas.refresh()
-                    time.sleep(0.1)
-                    draw_frame(self.canvas, self.row, self.column, self.frame, negative=True)
-                    self.canvas.refresh()
-                    time.sleep(0.1)
+                return
+
+            clean_field(self.canvas)
+            for _ in range(5):
+                draw_frame(self.canvas, self.row, self.column, self.frame)
+                self.canvas.refresh()
+                time.sleep(0.1)
+                draw_frame(self.canvas, self.row, self.column, self.frame, negative=True)
+                self.canvas.refresh()
+                time.sleep(0.1)
 
     async def fly(self, row: Union[int, None] = None, column: Union[int, None] = None) -> None:
         """Drawing & Replacing ship."""
@@ -88,7 +89,7 @@ class Ship:
         self.column = round(self.max_x / 2 - self.width / 2) if column is None else column
 
         while True:
-            await self.collision()
+            await self.check_collision()
             if self.dead:
                 break
             draw_frame(self.canvas, self.row, self.column, self.frame)

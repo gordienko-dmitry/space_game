@@ -26,20 +26,20 @@ def menu(canvas: Window) -> None:
 
     height: int
     width: int
-    height_border_frame: int
-    width_border_frame: int
+    frame_border_height: int
+    frame_border_width: int
     height, width = canvas.getmaxyx()
-    height_border_frame, width_border_frame = get_frame_size(border_frame)
-    ship_window: Window = canvas.derwin(height_border_frame + 2, width_border_frame + 2,
-                                        round(height/2 - height_border_frame - 1),
-                                        round(width / 2 - width_border_frame / 2))
+    frame_border_height, frame_border_width = get_frame_size(border_frame)
+    ship_window: Window = canvas.derwin(frame_border_height + 2, frame_border_width + 2,
+                                        round(height / 2 - frame_border_height - 1),
+                                        round(width / 2 - frame_border_width / 2))
 
     canvas.addstr(height - 2, int(width / 2 - 10), "PRESS SPACE FOR START")
 
     ship: Ship = Ship(ship_window)
     draw_frame(ship_window, 1, 1, border_frame)
     eventloop.add_coroutine(show_title(canvas, game_title_frames, height, width))
-    eventloop.add_coroutine(ship.animate(2, round(width_border_frame / 2 - 1)))
+    eventloop.add_coroutine(ship.animate(2, round(frame_border_width / 2 - 1)))
     eventloop.add_coroutine(blink_star(ship_window, 30))
     eventloop.add_coroutine(wait_for_space(canvas))
     eventloop.loop_forever([canvas, ship_window])
@@ -47,16 +47,20 @@ def menu(canvas: Window) -> None:
 
 async def show_title(canvas: Window, frames: List[str], height: int, width: int) -> None:
     """Draw game title words."""
-    height_frame: int
-    width_frame: int
-    height_frame, width_frame = get_frame_size(frames[0])
+    frame_width: int
+    _, frame_width = get_frame_size(frames[0])
     row: int = round(height/2)
-    column: int = round(width/2 - 3.5 * width_frame)
-    for index in cycle(range(len(frames))):
-        frame: str = frames[index]
-        draw_frame(canvas, row, column + index * width_frame, frame, negative=True)
+    column: int = round(width/2 - 3.5 * frame_width)
+
+    index: int = -1
+    frames_count: int = len(frames)
+    for frame in cycle(frames):
+        index += 1
+        if index > frames_count:
+            index = 0
+        draw_frame(canvas, row, column + index * frame_width, frame, negative=True)
         await eventloop.sleep(10)
-        draw_frame(canvas, row, column + index * width_frame, frame)
+        draw_frame(canvas, row, column + index * frame_width, frame)
         await eventloop.sleep(2)
 
 

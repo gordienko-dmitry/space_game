@@ -7,12 +7,16 @@ import eventloop
 from .curses_tools import getmaxyx_border, Window
 
 
+BORDER_LENGTH = 2
+
+
 async def blink_star(canvas: Window, count: int = 150) -> None:
     """Stars blinking loop."""
     height: int
     width: int
     height, width = getmaxyx_border(canvas)
-    stars_info: List[Tuple[int, int, str]] = [(random.randint(2, height-3), random.randint(2, width-3),
+    stars_info: List[Tuple[int, int, str]] = [(random.randint(BORDER_LENGTH, height - BORDER_LENGTH),
+                                               random.randint(BORDER_LENGTH, width - BORDER_LENGTH),
                                                random.choice("+*.:")) for _ in range(count)]
 
     # Prepare stars

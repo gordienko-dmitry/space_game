@@ -2,7 +2,7 @@ import curses
 
 import eventloop
 
-from .garbage import OBSTACLES, OBSTACLES_IN_LAST_COLLISIONS
+from .garbage import obstacles, obstacles_in_last_collisions
 from .curses_tools import getmaxyx_border, Window
 
 
@@ -38,10 +38,10 @@ async def fire(canvas: Window, start_row: float, start_column: float, rows_speed
 
     while 1 < row < max_row and 1 < column < max_column:
         collision: bool = False
-        for obstacle in OBSTACLES:
+        for obstacle in obstacles:
             if obstacle.has_collision(row, column, 1, 1):
                 collision = True
-                OBSTACLES_IN_LAST_COLLISIONS.append(obstacle)
+                obstacles_in_last_collisions.append(obstacle)
                 break
         if collision:
             break

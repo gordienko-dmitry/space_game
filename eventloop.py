@@ -2,7 +2,7 @@ import asyncio
 import time
 
 
-COROUTINES = []
+COROUTINES: list = []
 
 
 class LoopEnd(Exception):
@@ -23,7 +23,7 @@ def add_coroutine(coroutine):
 
 def loop_forever(windows_for_refresh: list):
     """Loop until at least one coroutine can work."""
-    if len(COROUTINES) == 0:
+    if not len(COROUTINES):
         raise Exception("No coroutines for start")
 
     index: int = 0

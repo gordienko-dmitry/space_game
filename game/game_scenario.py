@@ -72,14 +72,14 @@ async def show_game_over(canvas: Window, tics_to_stop: int = 100) -> None:
     """Show game over text."""
     height: int
     width: int
-    height_frame: int
-    width_frame: int
+    frame_height: int
+    frame_width: int
 
     height, width = getmaxyx_border(canvas)
-    height_frame, width_frame = get_frame_size(GAME_OVER_TEXT)
+    frame_height, frame_width = get_frame_size(GAME_OVER_TEXT)
     while True:
         if tics_to_stop <= 0:
             raise eventloop.LoopEnd
-        draw_frame(canvas, round(height / 2 - height_frame / 2), round(width / 2 - width_frame / 2), GAME_OVER_TEXT)
+        draw_frame(canvas, round(height / 2 - frame_height / 2), round(width / 2 - frame_width / 2), GAME_OVER_TEXT)
         await eventloop.sleep(1)
         tics_to_stop -= 1
