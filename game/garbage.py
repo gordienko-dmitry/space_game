@@ -31,13 +31,10 @@ def _find_place_for_garbage(width: int, frame: str) -> int:
     frame_width: int
     column: int
 
+    frame_height, frame_width = get_frame_size(frame)
     for _ in range(10):
         column = random.randint(1, width)
-        frame_height, frame_width = get_frame_size(frame)
-        for obstacle in obstacles:
-            if obstacle.has_collision(1, column, frame_height, frame_width):
-                break
-        else:
+        if not any(obstacle.has_collision(1, column, frame_height, frame_width) for obstacle in obstacles):
             return column
     return 0
 

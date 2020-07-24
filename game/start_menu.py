@@ -46,18 +46,20 @@ def menu(canvas: Window) -> None:
 
 
 async def show_title(canvas: Window, frames: List[str], height: int, width: int) -> None:
-    """Draw game title words."""
+    """
+    Draw game title words.
+    Every word from title will be blink:
+    draw negative and then draw in white color."""
     frame_width: int
     _, frame_width = get_frame_size(frames[0])
     row: int = round(height/2)
     column: int = round(width/2 - 3.5 * frame_width)
 
-    index: int = -1
-    frames_count: int = len(frames)
-    for frame in cycle(frames):
-        index += 1
-        if index > frames_count:
-            index = 0
+    index: int
+    frame: str
+    # It might be strange that negative first, but after first circle it'll be normal
+    # Every word in title disappears for 10 tics, and shows again
+    for index, frame in cycle(enumerate(frames)):
         draw_frame(canvas, row, column + index * frame_width, frame, negative=True)
         await eventloop.sleep(10)
         draw_frame(canvas, row, column + index * frame_width, frame)

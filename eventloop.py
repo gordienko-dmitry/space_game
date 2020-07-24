@@ -2,7 +2,7 @@ import asyncio
 import time
 
 
-COROUTINES: list = []
+coroutines: list = []
 
 
 class LoopEnd(Exception):
@@ -18,26 +18,26 @@ async def sleep(tics: int = 1):
 
 def add_coroutine(coroutine):
     """Add coroutine to coroutines list."""
-    COROUTINES.append(coroutine)
+    coroutines.append(coroutine)
 
 
 def loop_forever(windows_for_refresh: list):
     """Loop until at least one coroutine can work."""
-    if not len(COROUTINES):
+    if not coroutines:
         raise Exception("No coroutines for start")
 
     index: int = 0
-    while COROUTINES:
-        if index >= len(COROUTINES):
+    while coroutines:
+        if index >= len(coroutines):
             index = 0
-        coroutine = COROUTINES[index]
+        coroutine = coroutines[index]
         try:
             coroutine.send(None)
             index += 1
         except StopIteration:
-            COROUTINES.remove(coroutine)
+            coroutines.remove(coroutine)
         except LoopEnd:
-            COROUTINES.clear()
+            coroutines.clear()
             break
         for canvas in windows_for_refresh:
             canvas.refresh()

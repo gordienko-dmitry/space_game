@@ -59,29 +59,31 @@ class Ship:
         column = max(1, column)
         return row, column
 
+    def blink_few_times_before_continue(self):
+        for _ in range(5):
+            draw_frame(self.canvas, self.row, self.column, self.frame)
+            self.canvas.refresh()
+            time.sleep(0.1)
+            draw_frame(self.canvas, self.row, self.column, self.frame, negative=True)
+            self.canvas.refresh()
+            time.sleep(0.1)
+
+    async def explode_ship_and_game_over(self):
+        self.dead = True
+        await explode(self.canvas, int(self.row + self.height / 2), int(self.column + self.width / 2))
+        eventloop.add_coroutine(show_game_over(self.canvas))
+
     async def check_collision(self) -> None:
         """Actions if ship has collision with garbage."""
-        is_collision: bool = False
-        for obstacle in obstacles:
-            if obstacle.has_collision(self.row, self.column, self.height, self.width):
-                is_collision = True
-                break
-        if is_collision:
-            self.lives -= 1
-            if not self.lives:
-                self.dead = True
-                await explode(self.canvas, int(self.row + self.height / 2), int(self.column + self.width / 2))
-                eventloop.add_coroutine(show_game_over(self.canvas))
-                return
+        if not any(obstacle.has_collision(self.row, self.column, self.height, self.width) for obstacle in obstacles):
+            return
 
-            clean_field(self.canvas)
-            for _ in range(5):
-                draw_frame(self.canvas, self.row, self.column, self.frame)
-                self.canvas.refresh()
-                time.sleep(0.1)
-                draw_frame(self.canvas, self.row, self.column, self.frame, negative=True)
-                self.canvas.refresh()
-                time.sleep(0.1)
+        self.lives -= 1
+        if not self.lives:
+            await self.explode_ship_and_game_over()
+            return
+        clean_field(self.canvas)
+        self.blink_few_times_before_continue()
 
     async def fly(self, row: Union[int, None] = None, column: Union[int, None] = None) -> None:
         """Drawing & Replacing ship."""
